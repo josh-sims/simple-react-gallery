@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import $ from 'jquery';
+import axios from 'axios';
 
 
 var Scroll = require('react-scroll');
@@ -20,21 +21,20 @@ class App extends Component {
     super(props);
     this.state = {
       bgimg:ci,
-      paths:[
-        '2880-1800-crop-ferrari-250-gt-coupe-pininfarina-ii-c804316082018194649_1.jpg',
-        '001Sintesi.jpg',
-        '8e23fea18e5f18fec80320f805088260.jpg',
-        '12096.jpg',
-        '394096_70b74c24a99a_hd.jpg',
-        '105742745-15502471379612018_11_r1t_1.jpg',
-        '160111123507-lamborghini-miura-02.jpg',
-        'bianca-2.jpg',
-        'Lori-2015-Morgan-Three-Wheeler-05.jpg',
-        'Mclaren-720s.jpg',
-        'plymouth-cuda-hero-image.jpg',
-        'Porsche+356+1600+Super-2.jpg'
-      ],
+      paths:['2880-1800-crop-ferrari-250-gt-coupe-pininfarina-ii-c804316082018194649_1.jpg'],
+      tooltips:[],
     };
+    axios.get(`http://nope.site/gallery`)
+    .then(res => {
+      var gres = res.data
+      var itemsarr = gres.map((item, key) => item.iurl );
+      var t = gres.map((title, key) => title.ititle );
+      this.setState({ 
+        paths: itemsarr,
+        tooltips: t,
+        title: "Nope.io"
+      });
+    }) 
   }
 
   componentDidMount() {
@@ -45,11 +45,12 @@ class App extends Component {
     $('[data-toggle="tooltip"]').tooltip();
   }
 
-  ChangeBGStyle = (imgurl) => {
+  ChangeBGStyle = (imgurl, title) => {
     url = imgurl;
     localStorage.setItem("curr_bgimg", "url("+url+")");
     this.setState({
-      bgimg:"url("+url+")"
+      bgimg:"url("+url+")",
+      title:title
     });
     //ReactDOM.findDOMNode(this).scrollIntoView();
     var options = 
@@ -72,7 +73,7 @@ class App extends Component {
       <div className="App">
         <div className="App-header" style={divStyle}>
           <img src={logo} className="App-logo" alt="logo" />
-          <PageTitle title="Nope.io" />
+          <PageTitle title={this.state.title} />
         </div>
         <p className="App-intro">
           To get started, edit <code>src/App.js</code> and save to reload.<br />
@@ -80,8 +81,8 @@ class App extends Component {
         <div className="container">
           <div className="row">
           {this.state.paths.map((item, i) => (
-            <div key={i} className="col-3 mb-5 carimg" data-toggle="tooltip" data-placement="top" title="Pininfarina Ferrari" onClick={() => this.ChangeBGStyle(`images/full/${item}`)}>
-              <img src={`images/thumbs/${item}`} width="100%"alt="" />
+            <div key={i} className="col-3 mb-5 carimg" data-toggle="tooltip" data-placement="top" data-original-title={this.state.tooltips[i]} onClick={() => this.ChangeBGStyle(`images/full/${item}`, this.state.tooltips[i])}>
+              <img src={`images/thumbs/${item}`} width="100%" alt="" />
             </div>
           ))}
           </div>
